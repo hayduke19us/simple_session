@@ -102,4 +102,20 @@ class SimpleSessionTest < Minitest::Test
     get '/expire'
     refute body['user_id']
   end
+
+  def test_the_response_session_is_encrypted_from_normal_Base64_decode
+    get '/signin'
+    get '/'
+    session = response.original_headers["Set-Cookie"].split('=').last
+    uri  = URI.decode session
+    base = uri.unpack('m').first
+
+    assert_raises TypeError do
+      Marshal.load base
+    end 
+  end
+  def test_the_options_can_be_changed_from_the_controller
+    #TODO
+  end
+
 end
