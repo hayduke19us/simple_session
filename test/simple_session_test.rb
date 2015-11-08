@@ -44,13 +44,23 @@ class SimpleApp < Sinatra::Base
     end
   end
 
-  # Change expire to 10 seconds from now
+  # List all the options for expire, used as an expired request test
   get '/expire' do 
     hash = { session: session.inspect, 
       options: request.session_options.inspect,
       timeNow: Time.now
     }
     json hash
+  end
+
+  post '/options' do
+    old_expire = request.session_options[:expire]
+    request.session_options[:expire] = params[:expire]
+
+    spike = @env['rack.other.options']
+
+    json r: spike
+    # json old: old_expire, new: request.session_options[:expire]
   end
 
 end
@@ -67,6 +77,7 @@ class SimpleSessionTest < Minitest::Test
     refute_nil ::SimpleSession::VERSION
   end
 
+  focus
   def test_we_have_access_to_session_in_env
     get '/signin'
     assert_equal 200, response.status
@@ -102,4 +113,23 @@ class SimpleSessionTest < Minitest::Test
     get '/expire'
     refute body['user_id']
   end
+
+  def test_the_response_session_is_encrypted
+    get '/signin'
+    get '/'
+    session = response.original_headers["Set-Cookie"].split('=').last
+    uri  = URI.decode session
+    base = uri.unpack('m').first
+
+    assert_raises TypeError, "response session can not be decoded with Base64" do
+      Marshal.load base
+    end 
+  end
+
+  def test_the_options_can_be_changed_from_the_controller
+    post '/options', expire: 60
+    assert_equal 1, response.body
+  end
+
+>>>>>>> Stashed changes
 end

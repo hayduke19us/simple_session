@@ -1,6 +1,7 @@
 require 'rack/request'
 require 'securerandom'
 require 'openssl'
+require 'byebug'
 
 module SimpleSession
 
@@ -42,9 +43,11 @@ module SimpleSession
       # Decrypt request session and store it 
       extract_session env
 
+      byebug
       # Process options
       clear_session if time_expired?
 
+      x = session
       # Load session into app env
       load_environment env
 
@@ -54,6 +57,7 @@ module SimpleSession
       # Encrypt and add session to headers
       add_session headers
 
+      y = session
       [status, headers, body]
     end
 
@@ -180,10 +184,26 @@ module SimpleSession
       def initialize args
         @opts = sanitize args.dup
         process_request_options
+        set_instance_variables
+        create_readers
       end
 
       def opts
         @opts
+      end
+
+      def create_reader name 
+        self.class.send(:define_method, name, &Proc.new)
+      end
+
+      def create_readers
+        @opts.keys.each do |k|
+          create_reader(k) { instance_variable_get "@#{k}"}
+        end
+      end
+
+      def set_instance_variables
+        @opts.each { |k, v| instance_variable_set "@#{k.to_s}", v}
       end
 
       def process_request_options
@@ -195,7 +215,7 @@ module SimpleSession
       end
 
       def p_time
-        @opts[:expire] ||= default_time
+        @opts[:expire_time] ||= default_time
         @opts[:expire] = Time.now + @opts[:expire] if @opts[:expire]
       end
 

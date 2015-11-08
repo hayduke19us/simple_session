@@ -6,6 +6,7 @@ require 'json'
 
 require 'minitest/autorun'
 require 'minitest/pride'
+require 'mintest/focus'
 
 module TestHelpers
 
