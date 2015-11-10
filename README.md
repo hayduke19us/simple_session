@@ -4,12 +4,13 @@ This is a drop in replacement for rack session. By default
 the session cookie is encrypted in AES-256-CBC and requires a secret
 which is recommended to be kept in an .env file or something similar. 
 
-<a href='#install-sect'>Installation</a>
-* [Usage][usage-sect]
-	* [Overview][overview-sect]
-	* [Default Options][default-sect]
+<a href='#install-sect'><h4>Installation</h4></a>
+<a href='#usage-sect'><h4>Usage</h4></a>
+<a href='#overview-sect'><h4>Overview</h4></a>
+<a href='#default-sect'><h4>Default Options</h4></a>
+
 	
-[install-sect](#### Installation )
+<h2 id='install-sect'>Installation</h2>
 
 Add this line to your application's Gemfile:
 
