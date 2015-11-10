@@ -36,25 +36,31 @@ with 5 steps.
 1. Extract the session from the request if there is one. If there is no session 
 create a new one that looks like this:
 
-				{ session_id: 'some secret id' }
+```ruby
+{ session_id: 'some secret id' }
+```
 
 2. Load the session data into the app environment so they are accessible with racks request methods like this:
 
-				get '/'
-			      request.session 
-				  session
-				  request.session_options
-				end
+```ruby
+get '/'
+request.session 
+  session
+  request.session_options
+end
+```
 				
 3. Clear the session if the time has expired and create a new one.
 
 4. Update the options if they have been changed like this.  
 
-				# This changes the session to expire one minute after 
-				# the current time. 
-				get '/'  
-				  request.session_options[:expire_after] = 60
-				end
+```ruby
+# This changes the session to expire one minute after 
+# the current time. 
+get '/'  
+  request.session_options[:expire_after] = 60
+end
+```
 
 5. Create the new session cookie, encrypt it and return the response. 
 
@@ -66,25 +72,25 @@ create a new one that looks like this:
 
 The following is a simple example. The only **required argument is :secret**.
 
+```ruby
+require 'sinatra'
+require 'simple_session'
 
-				require 'sinatra'
-				require 'simple_session'
+class SimpleApp < Sinatra::Base
 
-				class SimpleApp < Sinatra::Base
+  use SimpleSession::Session, secret: 'Your Secret'
 
-				  use SimpleSession::Session, secret: 'Your Secret'
+  get '/signin' do
+	if session[:user_id] 
+	  "Already Signed in"
+	else
+	  session[:user_id] = '!Green3ggsandHam!'
+	  "Id:  #{ session[:user_id] }"
+	end
+  end
 
-				  get '/signin' do
-					if session[:user_id] 
-					  "Already Signed in"
-					else
-					  session[:user_id] = '!Green3ggsandHam!'
-					  "Id:  #{ session[:user_id] }"
-					end
-				  end
-
-				end
-
+end
+```
 
 ## Development
 
