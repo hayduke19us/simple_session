@@ -10,9 +10,9 @@ Gem::Specification.new do |spec|
   spec.email         = ["hayduke19us@gmail.com"]
 
   spec.summary       = %q{A simple middleware providing rack with a session cookie.}
-  spec.description   = %q{Provides the a light version of racks session options 
-                          and honers rack's naming conventions. HMAC AES-128-CBC 
-                          encryption included}
+  spec.description   = %q{Provides an AES-256-CBC encrypted session cookie
+                          with the option to set expire_after. Honors rack's
+                          methods like session and request.session_options}
   spec.homepage      = "https://github.com/hayduke19us/simple_session"
   spec.license       = "MIT"
 
