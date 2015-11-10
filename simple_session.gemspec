@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Provides the a light version of racks session options 
                           and honers rack's naming conventions. HMAC AES-128-CBC 
                           encryption included}
-  spec.homepage      = "http://github/hayduke19us/simple_session"
+  spec.homepage      = "https://github.com/hayduke19us/simple_session"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
