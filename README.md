@@ -25,12 +25,12 @@ And then execute:
 Or install it yourself as:
 
     $ gem install simple_session
-
-## Usage [usage-sect]
+    
+<h2 id='usage-sect'>Usage</h2>
 Full examples are in the *test/simple_session_test.rb* and 
 *test/simple_app.rb*.
 
-#### Overview [overview-sect]
+<h4 id='overview-sect'>Overview</h4>
 SimpleSession is a simple Middleware that processes the session cookie
 with 5 steps.
 
@@ -65,7 +65,7 @@ end
 
 5. Create the new session cookie, encrypt it and return the response. 
 
-#### Default Options [default-sect]
+<h4 id='default-sect'>Default Options/h4>
 
 * secret: nil
 * key: 'rack.session'
