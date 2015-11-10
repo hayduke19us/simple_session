@@ -5,8 +5,11 @@ the session cookie is encrypted in AES-256-CBC and requires a secret
 which is recommended to be kept in an .env file or something similar. 
 
 <a href='#install-sect'><h4>Installation</h4></a>
+
 <a href='#usage-sect'><h4>Usage</h4></a>
+
 <a href='#overview-sect'><h4>Overview</h4></a>
+
 <a href='#default-sect'><h4>Default Options</h4></a>
 
 	
@@ -65,7 +68,7 @@ end
 
 5. Create the new session cookie, encrypt it and return the response. 
 
-<h4 id='default-sect'>Default Options/h4>
+<h4 id='default-sect'>Default Options</h4>
 
 * secret: nil
 * key: 'rack.session'
