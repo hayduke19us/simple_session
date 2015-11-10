@@ -52,7 +52,7 @@ create a new one that looks like this:
 
 ```ruby
 get '/'
-request.session 
+  request.session 
   session
   request.session_options
 end
