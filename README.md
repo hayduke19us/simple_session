@@ -31,7 +31,11 @@ Or install it yourself as:
     
 <h2 id='usage-sect'>Usage</h2>
 Full examples are in the *test/simple_session_test.rb* and 
-*test/simple_app.rb*.
+*test/simple_app.rb*. It's just a middleware so throw it on top of the stack.
+
+```ruby
+use SimpleSession::Session, secret: 'some secret', expire_after: 7200
+```
 
 <h4 id='overview-sect'>Overview</h4>
 SimpleSession is a simple Middleware that processes the session cookie
