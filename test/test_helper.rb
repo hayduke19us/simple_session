@@ -6,6 +6,7 @@ require 'json'
 
 require 'minitest/autorun'
 require 'minitest/pride'
+require 'minitest/focus'
 
 module TestHelpers
 
@@ -21,6 +22,12 @@ module TestHelpers
     response.body.is_a?(String) ? JSON.parse(response.body) : response.body
   end
 
+  def res_session
+    JSON.parse body['session'] if body['session']
+  end
 
+  def res_opts
+    JSON.parse body['options'] if body['options']
+  end
 
 end

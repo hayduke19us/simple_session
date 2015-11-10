@@ -1,6 +1,7 @@
 require 'rack/request'
 require 'securerandom'
 require 'openssl'
+require 'byebug'
 
 module SimpleSession
 
@@ -42,6 +43,8 @@ module SimpleSession
       # Decrypt request session and store it 
       extract_session env
 
+      original_opts = @options[:options].dup
+
       # Process options
       clear_session if time_expired?
 
@@ -51,6 +54,9 @@ module SimpleSession
       # Pass on request
       status, headers, body = @app.call env
 
+      # Check session for changes and update options
+      update_options if options_changed? original_opts
+
       # Encrypt and add session to headers
       add_session headers
 
@@ -58,6 +64,14 @@ module SimpleSession
     end
 
     private
+
+    def update_options
+      @options = {options: OptionHash.new(@options[:options]).opts}
+    end
+
+    def options_changed? original
+      original != @options[:options]
+    end
 
     # If the session is nil create a new one
     # If the session is unable to be decrypted throw an
@@ -180,10 +194,26 @@ module SimpleSession
       def initialize args
         @opts = sanitize args.dup
         process_request_options
+        set_instance_variables
+        create_readers
       end
 
       def opts
         @opts
+      end
+
+      def create_reader name 
+        self.class.send(:define_method, name, &Proc.new)
+      end
+
+      def create_readers
+        @opts.keys.each do |k|
+          create_reader(k) { instance_variable_get "@#{k}"}
+        end
+      end
+
+      def set_instance_variables
+        @opts.each { |k, v| instance_variable_set "@#{k.to_s}", v}
       end
 
       def process_request_options
@@ -195,8 +225,8 @@ module SimpleSession
       end
 
       def p_time
-        @opts[:expire] ||= default_time
-        @opts[:expire] = Time.now + @opts[:expire] if @opts[:expire]
+        @opts[:expire_after] ||= default_time
+        @opts[:expire] = Time.now + @opts[:expire_after].to_i if @opts[:expire_after]
       end
 
       private
