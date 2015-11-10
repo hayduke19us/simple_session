@@ -1,69 +1,14 @@
 require 'test_helper'
-require 'sinatra'
-require 'sinatra/json'
 require 'rack/test'
 require 'timecop'
+require_relative 'simple_app'
 
-class SimpleApp < Sinatra::Base
-  # disable: show_exceptions
-
-  # The expire argument is added to current server time as seconds
-  use SimpleSession::Session, secret: SecureRandom.hex(32), expire: 1
-  before do 
-  end
-
-  def authenticated? &block
-    if session[:user_id] == '!Green3ggsandHam!'
-      status 200
-      json yield
-    else
-      status 401
-      json msg: "You must sign in"
-    end
-  end
-
-  def user_id_hash
-    {user_id: session[:user_id]}
-  end
-
-  get '/' do
-    authenticated? do
-      user_id_hash
-    end
-  end
-
-  get '/signin' do
-    session[:user_id] ? "Signed in" : session[:user_id] = '!Green3ggsandHam!'
-    json user_id: session[:user_id]
-  end
-
-  get '/signout' do
-    authenticated? do
-      session.clear
-      user_id_hash
-    end
-  end
-
-  # List all the options for expire, used as an expired request test
-  get '/expire' do 
-    hash = { session: session.inspect, 
-      options: request.session_options.inspect,
-      timeNow: Time.now
-    }
-    json hash
-  end
-
-  post '/options' do
-    old_expire = request.session_options[:expire]
-    request.session_options[:expire] = params[:expire]
-
-    spike = @env['rack.other.options']
-
-    json r: spike
-    # json old: old_expire, new: request.session_options[:expire]
-  end
-
-end
+# TestHelpers methods
+# secure_rand, returns SecureRandom 32 byte hex
+# response,    returns last_response
+# body,        if the body is a string parse it else return response.body
+# res_session, return the parsed inner elements of session if any
+# res_opts,    same as #res_session but for options
 
 class SimpleSessionTest < Minitest::Test
   include Rack::Test::Methods
@@ -77,7 +22,6 @@ class SimpleSessionTest < Minitest::Test
     refute_nil ::SimpleSession::VERSION
   end
 
-  focus
   def test_we_have_access_to_session_in_env
     get '/signin'
     assert_equal 200, response.status
@@ -111,7 +55,7 @@ class SimpleSessionTest < Minitest::Test
     end
 
     get '/expire'
-    refute body['user_id']
+    refute body['session']['user_id']
   end
 
   def test_the_response_session_is_encrypted
@@ -127,9 +71,26 @@ class SimpleSessionTest < Minitest::Test
   end
 
   def test_the_options_can_be_changed_from_the_controller
-    post '/options', expire: 60
-    assert_equal 1, response.body
+    post '/options', expire_after: 60
+    assert_equal 1,  body['old'].to_i
+    assert_equal 60, body['new'].to_i
   end
 
->>>>>>> Stashed changes
+  def test_session_after_the_options_were_changed
+    # First request made a day ago, with expire_after: set to + 1 second
+    # SimpleSession::Session, secret: SecureRandom.hex(32), expire_after: 1
+    Timecop.freeze(Time.now - (60 * 60 * 24)) do
+      get '/signin'
+      assert_match(/!Green/, body['user_id'])
+
+      # Changes expire_after to 2 days from now
+      post '/options', expire_after: 60 * 60 * 48
+      assert_equal 1,  body['old'].to_i
+      assert_equal 172800, body['new'].to_i
+    end
+
+    get '/expire'
+    assert_match(/!Green/, res_session['user_id'])
+  end
+
 end

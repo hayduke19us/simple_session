@@ -43,25 +43,35 @@ module SimpleSession
       # Decrypt request session and store it 
       extract_session env
 
-      byebug
+      original_opts = @options[:options].dup
+
       # Process options
       clear_session if time_expired?
 
-      x = session
       # Load session into app env
       load_environment env
 
       # Pass on request
       status, headers, body = @app.call env
 
+      # Check session for changes and update options
+      update_options if options_changed? original_opts
+
       # Encrypt and add session to headers
       add_session headers
 
-      y = session
       [status, headers, body]
     end
 
     private
+
+    def update_options
+      @options = {options: OptionHash.new(@options[:options]).opts}
+    end
+
+    def options_changed? original
+      original != @options[:options]
+    end
 
     # If the session is nil create a new one
     # If the session is unable to be decrypted throw an
@@ -215,8 +225,8 @@ module SimpleSession
       end
 
       def p_time
-        @opts[:expire_time] ||= default_time
-        @opts[:expire] = Time.now + @opts[:expire] if @opts[:expire]
+        @opts[:expire_after] ||= default_time
+        @opts[:expire] = Time.now + @opts[:expire_after].to_i if @opts[:expire_after]
       end
 
       private
