@@ -70,10 +70,12 @@ end
 
 <h4 id='default-sect'>Default Options</h4>
 
-* secret: nil
-* key: 'rack.session'
-* expire_after: 7200
-
+```ruby 
+secret: nil, 
+key: 'rack.session', 
+options_key: 'rack.session.options' 
+max_age: 7200 **NOTE:** we create an expires from the max_age 
+```
 The following is a simple example. The only **required argument is :secret**.
 
 ```ruby
