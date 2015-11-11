@@ -74,14 +74,15 @@ end
 secret: nil, 
 key: 'rack.session', 
 options_key: 'rack.session.options' ,
-max_age: nil,
+max_age: 172800,
 path: '/',
 domain: 'nil',
 secure: false,
 http_only: false
 ```
-**NOTE:** For time contraints onle `:max_age` is excepted. 
-Because there are still IE versions that don't support MaxAge we inject both MaxAge and Expires into the cookie.
+**NOTE:** For time contraints only `:max_age` is excepted and the default is 2 days. 
+Because there are still IE versions that don't support MaxAge we inject both MaxAge and Expires into the cookie
+and let the browser handle it.
 
 The following is a simple example. The only **required argument is :secret**.
 
