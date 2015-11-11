@@ -12,10 +12,25 @@ module SimpleSession
     def initialize app, options = {}
       @app          = app
       @key          = options.fetch :key, 'rack.session'
-      @secret       = options[:secret]
-      @cipher_key   = cipher_key
+      @secret       = options.fetch :secret, get_secret_errors(options)
       @options_key  = options.fetch :options_key, 'rack.session.options'
-      @default_opts = options
+      @default_opts = DEFAULT_OPTS.merge!(options)
+    end
+
+    def get_secret_errors options
+      secret = options[:secret]
+      missing_msg = %[
+        SimpleSession requires a secret like this:
+        use SimpleSession::Session, secret: 'some secret'
+      ]
+
+      short_msg  = %[
+        SimpleSession require a secret with a minimum length of 32
+        use SimpleSession::Session, secret: SecureRandom.hex(32)
+      ]
+
+      raise ArgumentError, missing_msg unless secret
+      raise ArgumentError, short_msg   unless secret.length >= 32
     end
 
     def req_session
@@ -32,7 +47,7 @@ module SimpleSession
     end
 
     def time_expired?
-      req_options && req_options[:expire] && req_options[:expire] <= Time.now
+      req_options && req_options[:expires] && req_options[:expires] <= Time.now
     end
 
     def new_session_hash
@@ -45,7 +60,8 @@ module SimpleSession
 
       original_opts = @options[:options].dup
 
-      # Process options
+      # Process options, the Browser is responsible for this but this
+      # is in case the browser fails
       clear_session if time_expired?
 
       # Load session into app env
@@ -64,15 +80,6 @@ module SimpleSession
     end
 
     private
-
-    def update_options
-      @options = {options: OptionHash.new(@options[:options]).opts}
-    end
-
-    def options_changed? original
-      original != @options[:options]
-    end
-
     # If the session is nil create a new one
     # If the session is unable to be decrypted throw an
     # error and create a new one.
@@ -82,9 +89,7 @@ module SimpleSession
         @request = Rack::Request.new env
         @session = req_session ? decrypt(req_session) : new_session_hash
 
-        unless @session
-          raise ArgumentError, "Unable to decrypt session  #{caller[0]}"
-        end
+        raise ArgumentError, "Unable to decrypt session" unless @session
 
       rescue => e
         @session = new_session_hash
@@ -101,9 +106,22 @@ module SimpleSession
 
     def add_session headers
       cookie = Hash.new
-      cookie[:value]   = session[:value] || session
-      cookie[:expires] = @options[:options][:expire]
-      set_cookie_header headers, @key, encrypt(cookie.merge!(@options))
+      cookie[:value] = encrypt session.merge!(@options)
+      cookie = cookie.merge!(cookie_options)
+
+      set_cookie_header headers, @key, cookie
+    end
+
+    def cookie_options
+      sanitize = [:expire_after]
+      options  = @options[:options].dup
+
+      options.each do |k,v|
+        options.delete(k) if sanitize.include?(k) && options[k]
+        options.delete(k) if options[k].nil? || options[k].to_s.empty?
+      end
+
+      options
     end
 
     def set_cookie_header headers, key, cookie
@@ -113,6 +131,14 @@ module SimpleSession
     def options_hash
       o = session[:options] || OptionHash.new(@default_opts).opts
       { options: o }
+    end
+
+    def update_options
+      @options = {options: OptionHash.new(@options[:options]).opts}
+    end
+
+    def options_changed? original
+      original != @options[:options]
     end
 
     def encrypt data
@@ -158,7 +184,7 @@ module SimpleSession
     end
 
     def hmac data
-      OpenSSL::HMAC.digest digest, @key, data
+      OpenSSL::HMAC.digest digest, @secret, data
     end
 
     def new_cipher
@@ -170,7 +196,7 @@ module SimpleSession
       cipher.encrypt
       iv = cipher.random_iv
       cipher.iv  = iv
-      cipher.key = @cipher_key
+      cipher.key = cipher_key
 
       iv + cipher.update(marshaled_data) + cipher.final
     end
@@ -179,7 +205,7 @@ module SimpleSession
       cipher = new_cipher
       cipher.decrypt
       cipher.iv  = data[0, 16]
-      cipher.key = @cipher_key
+      cipher.key = cipher_key
       cipher.update(data[16..-1]) + cipher.final
     end
 
@@ -194,26 +220,10 @@ module SimpleSession
       def initialize args
         @opts = sanitize args.dup
         process_request_options
-        set_instance_variables
-        create_readers
       end
 
       def opts
         @opts
-      end
-
-      def create_reader name 
-        self.class.send(:define_method, name, &Proc.new)
-      end
-
-      def create_readers
-        @opts.keys.each do |k|
-          create_reader(k) { instance_variable_get "@#{k}"}
-        end
-      end
-
-      def set_instance_variables
-        @opts.each { |k, v| instance_variable_set "@#{k.to_s}", v}
       end
 
       def process_request_options
@@ -225,21 +235,17 @@ module SimpleSession
       end
 
       def p_time
-        @opts[:expire_after] ||= default_time
-        @opts[:expire] = Time.now + @opts[:expire_after].to_i if @opts[:expire_after]
+        time = Time.now + @opts[:max_age].to_i
+        @opts[:expires] = time if @opts[:max_age]
       end
 
       private
-      def sanitize args
-        dup_args = args
-        SANITATION.each do |key|
-          dup_args.delete(key) if args[key]
-        end
-        dup_args
-      end
 
-      def default_time
-        60 * 60 * 2
+      def sanitize args
+        SANITATION.each do |key|
+          args.delete(key) if args[key]
+        end
+        args
       end
 
     end

@@ -5,7 +5,7 @@ class SimpleApp < Sinatra::Base
   # disable: show_exceptions
 
   # The expire argument is added to current server time as seconds
-  use SimpleSession::Session, secret: SecureRandom.hex(32), expire_after: 1
+  use SimpleSession::Session, secret: SecureRandom.hex, max_age: 10
 
   def authenticated? &block
     if session[:user_id] == '!Green3ggsandHam!'
@@ -45,10 +45,16 @@ class SimpleApp < Sinatra::Base
   end
 
   post '/options' do
-    old_expire = request.session_options[:expire_after]
-    request.session_options[:expire_after] = params[:expire_after]
+    sanitize = ['expires', 'max_age', 'path', 'domain', 'secure', 'http_only']
 
-    json old: old_expire, new: request.session_options[:expire_after]
+    hashed_params = Hash.new
+    params.each { |k, v| hashed_params[k.to_sym] = v if sanitize.include?(k)}
+
+    old_expire = request.session_options[:max_age]
+
+    request.session_options.merge!(hashed_params)
+
+    json old: old_expire, new: request.session_options[:max_age]
   end
 
 end

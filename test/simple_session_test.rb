@@ -9,6 +9,7 @@ require_relative 'simple_app'
 # body,        if the body is a string parse it else return response.body
 # res_session, return the parsed inner elements of session if any
 # res_opts,    same as #res_session but for options
+# encrypted_cookie_session, original headers parsed to rack.session value
 
 class SimpleSessionTest < Minitest::Test
   include Rack::Test::Methods
@@ -61,8 +62,7 @@ class SimpleSessionTest < Minitest::Test
   def test_the_response_session_is_encrypted
     get '/signin'
     get '/'
-    session = response.original_headers["Set-Cookie"].split('=').last
-    uri  = URI.decode session
+    uri  = URI.decode encrypted_cookie_session
     base = uri.unpack('m').first
 
     assert_raises TypeError, "response session can not be decoded with Base64" do
@@ -70,34 +70,16 @@ class SimpleSessionTest < Minitest::Test
     end 
   end
 
-  def test_the_options_can_be_changed_from_the_controller
-    post '/options', expire_after: 60
-    assert_equal 1,  body['old'].to_i
-    assert_equal 60, body['new'].to_i
-  end
-
-  def test_the_response_session_is_encrypted_from_normal_Base64_decode
-    get '/signin'
-    get '/'
-    session = response.original_headers["Set-Cookie"].split('=').last
-    uri  = URI.decode session
-    base = uri.unpack('m').first
-
-    assert_raises TypeError do
-      Marshal.load base
-    end 
-  end
-
   def test_session_after_the_options_were_changed
-    # First request made a day ago, with expire_after: set to + 1 second
-    # SimpleSession::Session, secret: SecureRandom.hex(32), expire_after: 1
+    # First request made a day ago, with expire_after: set to + 10 seconds
+    # SimpleSession::Session, secret: SecureRandom.hex(32), expire_after: 10
     Timecop.freeze(Time.now - (60 * 60 * 24)) do
       get '/signin'
       assert_match(/!Green/, body['user_id'])
 
       # Changes expire_after to 2 days from now
-      post '/options', expire_after: 60 * 60 * 48
-      assert_equal 1,  body['old'].to_i
+      post '/options', max_age: 60 * 60 * 48
+      assert_equal 10,  body['old'].to_i
       assert_equal 172800, body['new'].to_i
     end
 

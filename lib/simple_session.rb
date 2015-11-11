@@ -1,13 +1,14 @@
 require "simple_session/version"
 require "simple_session/base.rb"
 
-# Options 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# key          = options.fetch :key, 'rack.session'
-# secret       = options[:secret]
-# options_key  = options.fetch :options_key, 'rack.session.options'
-
 module SimpleSession
+  DEFAULT_OPTS = {
+    max_age: 7200 ,
+    domain: nil,
+    path: '/',
+    http_only: false,
+    secure: false,
+  }
 
   class Session < Base
 

@@ -30,4 +30,9 @@ module TestHelpers
     JSON.parse body['options'] if body['options']
   end
 
+  def encrypted_cookie_session
+    response.headers["Set-Cookie"].split(";").first.split('=').last
+  end
+
+
 end
