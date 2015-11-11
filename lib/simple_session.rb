@@ -3,7 +3,7 @@ require "simple_session/base.rb"
 
 module SimpleSession
   DEFAULT_OPTS = {
-    max_age: 7200 ,
+    max_age: 172800 ,
     domain: nil,
     path: '/',
     http_only: false,

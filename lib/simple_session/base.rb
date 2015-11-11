@@ -41,15 +41,6 @@ module SimpleSession
       session[:options] if session
     end
 
-    def clear_session
-      @session = new_session_hash
-      @options = {options: OptionHash.new(@default_opts).opts}
-    end
-
-    def time_expired?
-      req_options && req_options[:expires] && req_options[:expires] <= Time.now
-    end
-
     def new_session_hash
       { session_id: SecureRandom.hex(32) }
     end
@@ -59,10 +50,6 @@ module SimpleSession
       extract_session env
 
       original_opts = @options[:options].dup
-
-      # Process options, the Browser is responsible for this but this
-      # is in case the browser fails
-      clear_session if time_expired?
 
       # Load session into app env
       load_environment env
@@ -80,10 +67,6 @@ module SimpleSession
     end
 
     private
-    # If the session is nil create a new one
-    # If the session is unable to be decrypted throw an
-    # error and create a new one.
-    # encrypted data is not allowed in the app env
     def extract_session env
       begin
         @request = Rack::Request.new env
@@ -107,21 +90,9 @@ module SimpleSession
     def add_session headers
       cookie = Hash.new
       cookie[:value] = encrypt session.merge!(@options)
-      cookie = cookie.merge!(cookie_options)
+      cookie = cookie.merge!(@options[:options])
 
       set_cookie_header headers, @key, cookie
-    end
-
-    def cookie_options
-      sanitize = [:expire_after]
-      options  = @options[:options].dup
-
-      options.each do |k,v|
-        options.delete(k) if sanitize.include?(k) && options[k]
-        options.delete(k) if options[k].nil? || options[k].to_s.empty?
-      end
-
-      options
     end
 
     def set_cookie_header headers, key, cookie
@@ -142,41 +113,25 @@ module SimpleSession
     end
 
     def encrypt data
-      begin
-        if data.is_a? Hash
-          # Serialize
-          m = Marshal.dump data
+      # Serialize
+      m = Marshal.dump data
 
-          # Cipher
-          c = load_cipher m
+      # Cipher
+      c = load_cipher m
 
-          # Base64
-          [c].pack('m')
-        else
-          raise ArgumentError, "Internal session data must be a hash"
-        end
-      rescue => e
-        puts e.message
-      end
+      # Encode Base64
+      [c].pack('m')
     end
 
     def decrypt data
-      begin
-        if data.is_a? String
-          # Decode Base64
-          b = data.unpack('m').first
+      # Decode Base64
+      b = data.unpack('m').first
 
-          # Decipher
-          c = unload_cipher b
+      # Decipher
+      c = unload_cipher b
 
-          # Deserialize
-          Marshal.load c
-        else
-          raise ArgumentError, "External session data must be a string."
-        end
-      rescue => e
-        puts e.message
-      end
+      # Deserialize
+      Marshal.load c
     end
 
     def digest
@@ -240,7 +195,6 @@ module SimpleSession
       end
 
       private
-
       def sanitize args
         SANITATION.each do |key|
           args.delete(key) if args[key]
@@ -249,8 +203,5 @@ module SimpleSession
       end
 
     end
-
   end
-
 end
-
