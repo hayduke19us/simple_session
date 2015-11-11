@@ -34,12 +34,13 @@ Full examples are in the *test/simple_session_test.rb* and
 *test/simple_app.rb*. It's just a middleware so throw it on top of the stack.
 
 ```ruby
-use SimpleSession::Session, secret: 'some secret', expire_after: 7200
+use SimpleSession::Session, secret: SecureRandom.hex
 ```
+**NOTE:** `:secret` must be 32 chars long.
 
 <h4 id='overview-sect'>Overview</h4>
 SimpleSession is a simple Middleware that processes the session cookie
-with 5 steps.
+with 4 steps.
 
 *  Extract the session from the request if there is one. If there is no session 
 create a new one that looks like this:
@@ -55,14 +56,13 @@ get '/'
   request.session_options
 end
 ```
-* Clear the session if the time has expired and create a new one.
 * Update the options if they have been changed like this.  
 
 ```ruby
 # This changes the session to expire one minute after 
 # the current time. 
 get '/'  
-  request.session_options[:expire_after] = 60
+  request.session_options[:max_age] = 60
 end
 ```
 
@@ -73,9 +73,16 @@ end
 ```ruby 
 secret: nil, 
 key: 'rack.session', 
-options_key: 'rack.session.options' 
-max_age: 7200 **NOTE:** we create an expires from the max_age 
+options_key: 'rack.session.options' ,
+max_age: nil,
+path: '/',
+domain: 'nil',
+secure: false,
+http_only: false
 ```
+**NOTE:** For time contraints onle `:max_age` is excepted. 
+Because there are still IE versions that don't support MaxAge we inject both MaxAge and Expires into the cookie.
+
 The following is a simple example. The only **required argument is :secret**.
 
 ```ruby
