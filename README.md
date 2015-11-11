@@ -41,26 +41,22 @@ use SimpleSession::Session, secret: 'some secret', expire_after: 7200
 SimpleSession is a simple Middleware that processes the session cookie
 with 5 steps.
 
-1. Extract the session from the request if there is one. If there is no session 
+*  Extract the session from the request if there is one. If there is no session 
 create a new one that looks like this:
 
 ```ruby
 { session_id: 'some secret id' }
 ```
-
-2. Load the session data into the app environment so they are accessible with racks request methods like this:
-
+* Load the session data into the app environment so they are accessible with racks request methods like this:
 ```ruby
 get '/'
-request.session 
+  request.session 
   session
   request.session_options
 end
 ```
-				
-3. Clear the session if the time has expired and create a new one.
-
-4. Update the options if they have been changed like this.  
+* Clear the session if the time has expired and create a new one.
+* Update the options if they have been changed like this.  
 
 ```ruby
 # This changes the session to expire one minute after 
@@ -70,7 +66,7 @@ get '/'
 end
 ```
 
-5. Create the new session cookie, encrypt it and return the response. 
+* Create the new session cookie, encrypt it and return the response. 
 
 <h4 id='default-sect'>Default Options</h4>
 
