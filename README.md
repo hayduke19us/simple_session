@@ -12,7 +12,7 @@ which is recommended to be kept in an .env file or something similar.
 
 <a href='#overview-sect'><h4>Overview</h4></a>
 
-
+<a href='#overview-sect'><h4>Overview</h4></a>
 	
 <h2 id='install-sect'>Installation</h2>
 
@@ -39,9 +39,9 @@ use SimpleSession::Session, secret: SecureRandom.hex
 ```
 **NOTE:** `:secret` must be 32 chars long.
 
-<h4 id='default-sect'>Default Options</h4>
-
 ```ruby 
+secret: nil
+>>>>>>> 33588cea883ce2a62065c1677e18d6066eb25644
 key: 'rack.session', 
 options_key: 'rack.session.options' ,
 max_age: 172800,
@@ -50,9 +50,8 @@ domain: 'nil',
 secure: false,
 http_only: false
 ```
-**NOTE:** For time contraints only `:max_age` is excepted and the default is 2
-days. Because there are still IE versions that don't support max-age we inject
-both max-age and expires into the cookie and let the browser handle it.
+**NOTE:** For persistent options `:max_age` is excepted and the default is 2 days. 
+Because there are still IE versions that don't support max-age we inject both **max-age** and **expires** into the cookie and let the browser handle it.
 
 The following is a simple example. The only **required argument is :secret**.
 
@@ -62,20 +61,20 @@ require 'simple_session'
 
 class SimpleApp < Sinatra::Base
 
-  use SimpleSession::Session, secret: SecureRandom.hex
+  SECRET = SecureRandom.hex
+  use SimpleSession::Session, secret: SECRET
 
   get '/signin' do
-	if session[:user_id] 
-	  "Already Signed in"
-	else
-	  session[:user_id] = '!Green3ggsandHam!'
-	  "Id:  #{ session[:user_id] }"
-	end
+    if session[:user_id] 
+      "Already Signed in"
+    else
+      session[:user_id] = '!Green3ggsandHam!'
+      "Id:  #{ session[:user_id] }"
+    end
   end
 
 end
 ```
-
 
 <h4 id='overview-sect'>Overview</h4>
 SimpleSession is a simple Middleware that processes the session cookie

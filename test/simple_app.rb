@@ -3,9 +3,10 @@ require 'sinatra/json'
 
 class SimpleApp < Sinatra::Base
   # disable: show_exceptions
+  SECRET = SecureRandom.hex
 
   # The expire argument is added to current server time as seconds
-  use SimpleSession::Session, secret: SecureRandom.hex, max_age: 10
+  use SimpleSession::Session, secret: SECRET, max_age: 10
 
   def authenticated? &block
     if session[:user_id] == '!Green3ggsandHam!'
