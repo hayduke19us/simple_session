@@ -93,8 +93,8 @@ module SimpleSession
 
     def add_session headers
       cookie = Hash.new
-      cookie[:value] = encrypt session.merge!(@options)
-      cookie = cookie.merge!(@options[:options])
+      cookie[:value] = encrypt session.merge(@options)
+      cookie.merge!(@options[:options])
 
       set_cookie_header headers, @key, cookie
     end
@@ -102,7 +102,6 @@ module SimpleSession
     def set_cookie_header headers, key, cookie
       Rack::Utils.set_cookie_header! headers, key, cookie
     end
-
 
     def update_options
       @options = {options: OptionHash.new(request.session_options).opts}
@@ -181,12 +180,17 @@ module SimpleSession
       SANITATION = [:key, :secret, :options_key]
 
       def initialize args
-        @opts = sanitize args.dup
+        @opts = args
         process_request_options
+        sanitize_opts
       end
 
       def opts
         @opts
+      end
+
+      def sanitize_opts
+        @opts = sanitize @opts
       end
 
       def process_request_options
