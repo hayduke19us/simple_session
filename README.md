@@ -12,8 +12,6 @@ which is recommended to be kept in an .env file or something similar.
 <a href='#default-sect'><h4>Default Options</h4></a>
 
 <a href='#overview-sect'><h4>Overview</h4></a>
-
-<a href='#overview-sect'><h4>Overview</h4></a>
 	
 <h2 id='install-sect'>Installation</h2>
 
