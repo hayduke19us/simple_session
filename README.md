@@ -1,4 +1,5 @@
 # SimpleSession
+![build-status](https://travis-ci.org/hayduke19us/simple_session.svg?branch=master)
 
 This is a drop in replacement for rack session. By default
 the session cookie is encrypted in AES-256-CBC and requires a secret
@@ -39,9 +40,10 @@ use SimpleSession::Session, secret: SecureRandom.hex
 ```
 **NOTE:** `:secret` must be 32 chars long.
 
+<h4 id='default-sect'>Default Options</h4>
+
 ```ruby 
 secret: nil
->>>>>>> 33588cea883ce2a62065c1677e18d6066eb25644
 key: 'rack.session', 
 options_key: 'rack.session.options' ,
 max_age: 172800,
