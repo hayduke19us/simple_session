@@ -81,6 +81,11 @@ module SimpleSession
       @options = options_hash
     end
 
+    def options_hash
+      o = session[:options] || OptionHash.new(@default_opts).opts
+      { options: o }
+    end
+
     def load_environment env
       env[@key] = session.dup
       env[@options_key] = @options[:options].dup
@@ -98,10 +103,6 @@ module SimpleSession
       Rack::Utils.set_cookie_header! headers, key, cookie
     end
 
-    def options_hash
-      o = session[:options] || OptionHash.new(@default_opts).opts
-      { options: o }
-    end
 
     def update_options
       @options = {options: OptionHash.new(request.session_options).opts}

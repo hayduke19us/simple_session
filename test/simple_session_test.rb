@@ -93,7 +93,7 @@ class SimpleSessionTest < Minitest::Test
 
     assert_equal first, second
 
-    Timecop.freeze(Time.now + 60) do
+    Timecop.freeze(Time.now + 10) do
       current = Time.now
       get '/expire'
 
