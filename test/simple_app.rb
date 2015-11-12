@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/json'
 
 class SimpleApp < Sinatra::Base
   # disable: show_exceptions

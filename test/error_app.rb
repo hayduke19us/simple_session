@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/json'
 
 module ErrorApp 
   class Base < Sinatra::Base
