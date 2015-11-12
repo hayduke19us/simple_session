@@ -8,10 +8,9 @@ which is recommended to be kept in an .env file or something similar.
 
 <a href='#usage-sect'><h4>Usage</h4></a>
 
-<a href='#overview-sect'><h4>Overview</h4></a>
-
 <a href='#default-sect'><h4>Default Options</h4></a>
 
+<a href='#overview-sect'><h4>Overview</h4></a>
 	
 <h2 id='install-sect'>Installation</h2>
 
@@ -49,14 +48,14 @@ create a new one that looks like this:
 { session_id: 'some secret id' }
 ```
 * Load the session data into the app environment so they are accessible with racks request methods like this:
+
 ```ruby
 get '/'
-  request.session 
-  session
+  request.session == session
   request.session_options
 end
 ```
-* Update the options if they have been changed like this.  
+* Update the options and session if they have been changed during the request like this.  
 
 ```ruby
 # This changes the session to expire one minute after 
@@ -71,7 +70,7 @@ end
 <h4 id='default-sect'>Default Options</h4>
 
 ```ruby 
-secret: nil, 
+secret: nil
 key: 'rack.session', 
 options_key: 'rack.session.options' ,
 max_age: 172800,
@@ -80,9 +79,8 @@ domain: 'nil',
 secure: false,
 http_only: false
 ```
-**NOTE:** For time contraints only `:max_age` is excepted and the default is 2 days. 
-Because there are still IE versions that don't support MaxAge we inject both MaxAge and Expires into the cookie
-and let the browser handle it.
+**NOTE:** For persistent options only `:max_age` is excepted and the default is 2 days. 
+Because there are still IE versions that don't support MaxAge we inject both **max-age** and **expires** into the cookie and let the browser handle it.
 
 The following is a simple example. The only **required argument is :secret**.
 
@@ -92,7 +90,8 @@ require 'simple_session'
 
 class SimpleApp < Sinatra::Base
 
-  use SimpleSession::Session, secret: 'Your Secret'
+  SECRET = SecureRandom.hex
+  use SimpleSession::Session, secret: SECRET
 
   get '/signin' do
 	if session[:user_id] 
