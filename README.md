@@ -79,8 +79,8 @@ domain: 'nil',
 secure: false,
 http_only: false
 ```
-**NOTE:** For persistent options only `:max_age` is excepted and the default is 2 days. 
-Because there are still IE versions that don't support MaxAge we inject both **max-age** and **expires** into the cookie and let the browser handle it.
+**NOTE:** For persistent options `:max_age` is excepted and the default is 2 days. 
+Because there are still IE versions that don't support max-age we inject both **max-age** and **expires** into the cookie and let the browser handle it.
 
 The following is a simple example. The only **required argument is :secret**.
 
@@ -94,12 +94,12 @@ class SimpleApp < Sinatra::Base
   use SimpleSession::Session, secret: SECRET
 
   get '/signin' do
-	if session[:user_id] 
-	  "Already Signed in"
-	else
-	  session[:user_id] = '!Green3ggsandHam!'
-	  "Id:  #{ session[:user_id] }"
-	end
+    if session[:user_id] 
+      "Already Signed in"
+    else
+      session[:user_id] = '!Green3ggsandHam!'
+      "Id:  #{ session[:user_id] }"
+    end
   end
 
 end
