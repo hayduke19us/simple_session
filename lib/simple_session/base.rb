@@ -171,7 +171,7 @@ module SimpleSession
     end
 
     def cipher_key
-      hmac("A red, red fox has had three socks but all have holes")
+      hmac("A red, red fox has had three socks but all have holes" + @secret)
     end
 
     class OptionHash
