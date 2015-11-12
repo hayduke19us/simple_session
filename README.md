@@ -8,9 +8,10 @@ which is recommended to be kept in an .env file or something similar.
 
 <a href='#usage-sect'><h4>Usage</h4></a>
 
+<a href='#default-sect'><h4>Default Options</h4></a>
+
 <a href='#overview-sect'><h4>Overview</h4></a>
 
-<a href='#default-sect'><h4>Default Options</h4></a>
 
 	
 <h2 id='install-sect'>Installation</h2>
@@ -37,6 +38,44 @@ Full examples are in the *test/simple_session_test.rb* and
 use SimpleSession::Session, secret: SecureRandom.hex
 ```
 **NOTE:** `:secret` must be 32 chars long.
+
+<h4 id='default-sect'>Default Options</h4>
+
+```ruby 
+key: 'rack.session', 
+options_key: 'rack.session.options' ,
+max_age: 172800,
+path: '/',
+domain: 'nil',
+secure: false,
+http_only: false
+```
+**NOTE:** For time contraints only `:max_age` is excepted and the default is 2
+days. Because there are still IE versions that don't support max-age we inject
+both max-age and expires into the cookie and let the browser handle it.
+
+The following is a simple example. The only **required argument is :secret**.
+
+```ruby
+require 'sinatra'
+require 'simple_session'
+
+class SimpleApp < Sinatra::Base
+
+  use SimpleSession::Session, secret: SecureRandom.hex
+
+  get '/signin' do
+	if session[:user_id] 
+	  "Already Signed in"
+	else
+	  session[:user_id] = '!Green3ggsandHam!'
+	  "Id:  #{ session[:user_id] }"
+	end
+  end
+
+end
+```
+
 
 <h4 id='overview-sect'>Overview</h4>
 SimpleSession is a simple Middleware that processes the session cookie
@@ -68,43 +107,6 @@ end
 
 * Create the new session cookie, encrypt it and return the response. 
 
-<h4 id='default-sect'>Default Options</h4>
-
-```ruby 
-secret: nil, 
-key: 'rack.session', 
-options_key: 'rack.session.options' ,
-max_age: 172800,
-path: '/',
-domain: 'nil',
-secure: false,
-http_only: false
-```
-**NOTE:** For time contraints only `:max_age` is excepted and the default is 2 days. 
-Because there are still IE versions that don't support MaxAge we inject both MaxAge and Expires into the cookie
-and let the browser handle it.
-
-The following is a simple example. The only **required argument is :secret**.
-
-```ruby
-require 'sinatra'
-require 'simple_session'
-
-class SimpleApp < Sinatra::Base
-
-  use SimpleSession::Session, secret: 'Your Secret'
-
-  get '/signin' do
-	if session[:user_id] 
-	  "Already Signed in"
-	else
-	  session[:user_id] = '!Green3ggsandHam!'
-	  "Id:  #{ session[:user_id] }"
-	end
-  end
-
-end
-```
 
 ## Development
 
