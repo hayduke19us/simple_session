@@ -41,7 +41,7 @@ class SimpleApp < Sinatra::Base
 
   # List all the options for expire, used as an expired request test
   get '/expire' do 
-    json session: session.to_json
+    json session: session.merge!(request.session_options).to_json
   end
 
   post '/options' do

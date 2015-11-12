@@ -49,16 +49,15 @@ module SimpleSession
       # Decrypt request session and store it 
       extract_session env
 
-      original_opts = @options[:options].dup
-
       # Load session into app env
       load_environment env
 
       # Pass on request
       status, headers, body = @app.call env
 
-      # Check session for changes and update options
-      update_options if options_changed? original_opts
+      # Check session for changes and update
+      update_options if options_changed?
+      update_session if session_changed?
 
       # Encrypt and add session to headers
       add_session headers
@@ -83,8 +82,8 @@ module SimpleSession
     end
 
     def load_environment env
-      env[@key] = session[:value] || session
-      env[@options_key] = @options[:options]
+      env[@key] = session.dup
+      env[@options_key] = @options[:options].dup
     end
 
     def add_session headers
@@ -105,11 +104,19 @@ module SimpleSession
     end
 
     def update_options
-      @options = {options: OptionHash.new(@options[:options]).opts}
+      @options = {options: OptionHash.new(request.session_options).opts}
     end
 
-    def options_changed? original
-      original != @options[:options]
+    def options_changed? 
+      request.session_options != @options[:options]
+    end
+
+    def session_changed?
+      request.session != @session
+    end
+
+    def update_session
+      @session = request.session
     end
 
     def encrypt data

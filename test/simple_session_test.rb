@@ -49,14 +49,14 @@ class SimpleSessionTest < Minitest::Test
     refute body['user_id']
   end
 
-  def test_expired_session_id_is_recreated_and_session_is_cleared
-    Timecop.freeze(Time.now - (60 * 60 * 24)) do
-      get '/signin'
-      assert_match(/\A!Green/, body['user_id'])
-    end
+  def test_expired_session_is_cleared
+    get '/signin'
+    assert_match(/\A!Green/, body['user_id'])
 
-    get '/expire'
-    refute body['session']['user_id']
+    Timecop.freeze(Time.now + 60 ) do
+      get '/expire'
+      refute res_session['user_id']
+    end
   end
 
   def test_the_response_session_is_encrypted
@@ -70,21 +70,39 @@ class SimpleSessionTest < Minitest::Test
     end 
   end
 
-  def test_session_after_the_options_were_changed
-    # First request made a day ago, with expire_after: set to + 10 seconds
-    # SimpleSession::Session, secret: SecureRandom.hex(32), expire_after: 10
-    Timecop.freeze(Time.now - (60 * 60 * 24)) do
-      get '/signin'
-      assert_match(/!Green/, body['user_id'])
+  def session_accepts_changes_from_the_controller_and_applies_them
+    get '/signin'
+    assert_match(/!Green/, body['user_id'])
 
-      # Changes expire_after to 2 days from now
-      post '/options', max_age: 60 * 60 * 48
-      assert_equal 10,  body['old'].to_i
-      assert_equal 172800, body['new'].to_i
+    post '/options', max_age: 60 * 60 * 48
+    assert_equal 10,  body['old'].to_i, "old max-age"
+    assert_equal 172800, body['new'].to_i, "new max-age"
+
+    Timecop.freeze(Time.now  + (60 * 60 * 24)) do
+      get '/expire'
+      assert_match(/!Green/, res_session['user_id'])
     end
+  end
+
+  def test_session_is_not_renewed_each_request_and_the_options_are_persistant
+    get '/expire'
+    first = Time.parse(res_session['expires'])
 
     get '/expire'
-    assert_match(/!Green/, res_session['user_id'])
+    second = Time.parse(res_session['expires'])
+
+    assert_equal first, second
+
+    Timecop.freeze(Time.now + 60) do
+      current = Time.now
+      get '/expire'
+
+      last = Time.parse(res_session['expires'])
+      diff = last - current
+
+      assert diff >= 9 && diff < 11
+      refute_equal first, last
+    end
   end
 
 end
