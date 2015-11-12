@@ -1,6 +1,8 @@
 # SimpleSession
 ![build-status](https://travis-ci.org/hayduke19us/simple_session.svg?branch=master)
 
+![Gem Version](https://badge.fury.io/rb/simple_session.svg)
+
 This is a drop in replacement for rack session. By default
 the session cookie is encrypted in AES-256-CBC and requires a secret
 which is recommended to be kept in an .env file or something similar. 
