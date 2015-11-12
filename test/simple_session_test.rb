@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'rack/test'
 require 'timecop'
 require_relative 'simple_app'
 

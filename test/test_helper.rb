@@ -3,6 +3,7 @@ require 'simple_session'
 
 require 'securerandom'
 require 'json'
+require 'rack/test'
 
 require 'minitest/autorun'
 require 'minitest/pride'
