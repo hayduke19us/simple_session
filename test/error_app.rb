@@ -1,10 +1,10 @@
 require 'sinatra'
-require 'sinatra/json'
+require 'json'
 
 module ErrorApp 
   class Base < Sinatra::Base
     get '/' do
-      json msg: 'This should fail before the request'
+      {msg: 'This should fail before the request'}.to_json
     end
   end
 

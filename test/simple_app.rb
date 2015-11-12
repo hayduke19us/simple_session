@@ -1,5 +1,5 @@
 require 'sinatra'
-require 'sinatra/json'
+require 'json'
 
 class SimpleApp < Sinatra::Base
   # disable: show_exceptions
@@ -11,15 +11,15 @@ class SimpleApp < Sinatra::Base
   def authenticated? &block
     if session[:user_id] == '!Green3ggsandHam!'
       status 200
-      json yield
+      yield
     else
       status 401
-      json msg: "You must sign in"
+      {msg: "You must sign in"}.to_json
     end
   end
 
   def user_id_hash
-    {user_id: session[:user_id]}
+    {user_id: session[:user_id]}.to_json
   end
 
   get '/' do
@@ -29,8 +29,8 @@ class SimpleApp < Sinatra::Base
   end
 
   get '/signin' do
-    session[:user_id] ? "Signed in" : session[:user_id] = '!Green3ggsandHam!'
-    json user_id: session[:user_id]
+    session[:user_id] = '!Green3ggsandHam!'
+    user_id_hash
   end
 
   get '/signout' do
@@ -42,7 +42,7 @@ class SimpleApp < Sinatra::Base
 
   # List all the options for expire, used as an expired request test
   get '/expire' do 
-    json session: session.merge(request.session_options).to_json
+    {session: session.merge(request.session_options).to_json}.to_json
   end
 
   post '/options' do
@@ -55,7 +55,7 @@ class SimpleApp < Sinatra::Base
 
     request.session_options.merge!(hashed_params)
 
-    json old: old_expire, new: request.session_options[:max_age]
+    {old: old_expire, new: request.session_options[:max_age]}.to_json
   end
 
 end
