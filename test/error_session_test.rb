@@ -21,4 +21,13 @@ class ErrorSessionTest < Minitest::Test
       get '/'
     end
   end
+
+  def test_if_the_hmac_has_changed_then_things_are_messed_up
+    @app = ErrorApp::ChangeHeader
+    get '/'
+
+    assert_output 'SecurityError' do
+      get '/'
+    end
+  end
 end

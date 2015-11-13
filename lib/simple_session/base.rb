@@ -1,6 +1,7 @@
 require 'rack/request'
 require 'securerandom'
 require 'openssl'
+require 'byebug'
 
 module SimpleSession
 
@@ -72,9 +73,9 @@ module SimpleSession
 
         raise ArgumentError, "Unable to decrypt session" unless @session
 
-      rescue => e
+      rescue Exception => e
         @session = new_session_hash
-        puts e.message
+        print e.message
       end
 
       @options = options_hash
@@ -125,19 +126,27 @@ module SimpleSession
       # Cipher
       c = load_cipher m
 
+      # Sign
+      h = hmac(cipher_key) + c
+
       # Encode Base64
-      [c].pack('m')
+      [h].pack('m')
     end
 
     def decrypt data
       # Decode Base64
       b = data.unpack('m').first
 
-      # Decipher
-      c = unload_cipher b
+      # Parse Signature
+      h    = b[0, 32]
+      data = b[32..-1]
 
-      # Deserialize
-      Marshal.load c
+      if h == hmac(cipher_key).to_s
+        # Decipher
+        Marshal.load unload_cipher data
+      else
+        raise SecurityError
+      end
     end
 
     def digest
