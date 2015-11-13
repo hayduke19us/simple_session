@@ -22,7 +22,7 @@ class ErrorSessionTest < Minitest::Test
     end
   end
 
-  def test_if_the_hmac_has_changed_then_things_are_messed_up
+  def test_if_the_hmac_fails_then_a_new_session_is_created_and_request_continues
     @app = ErrorApp::ChangeHeader
     get '/'
 
