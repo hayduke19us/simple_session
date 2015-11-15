@@ -38,14 +38,17 @@ class SimpleSessionTest < Minitest::Test
   def test_when_not_signed_in_we_get_a_401
     get '/'
     assert_equal 401, response.status
-    assert_equal "You must sign in", body['msg']
   end
 
   def test_when_we_sign_out_our_session_is_cleared
     get '/signin'
+    assert body['user_id']
+
     get '/signout'
-    assert_equal 200, response.status
-    refute body['user_id']
+    refute response.body['user_id']
+
+    get '/'
+    assert_equal 401, response.status
   end
 
   def test_expired_session_is_cleared

@@ -70,15 +70,14 @@ module SimpleSession
       begin
         @request = Rack::Request.new env
         @session = req_session ? decrypt(req_session) : new_session_hash
-
-        raise ArgumentError, "Unable to decrypt session" unless @session
+        session.merge!(options_hash)
+        raise ArgumentError, "Unable to decrypt session" unless session
 
       rescue Exception => e
         @session = new_session_hash
         print e.message
       end
 
-      @options = options_hash
     end
 
     def options_hash
@@ -88,13 +87,13 @@ module SimpleSession
 
     def load_environment env
       env[@key] = session.dup
-      env[@options_key] = @options[:options].dup
+      env[@options_key] = session[:options].dup
     end
 
     def add_session headers
       cookie = Hash.new
-      cookie[:value] = encrypt session.merge(@options)
-      cookie.merge!(@options[:options])
+      cookie.merge!(session.fetch(:options, @default_opts))
+      cookie[:value] = encrypt session
 
       set_cookie_header headers, @key, cookie
     end
@@ -104,15 +103,15 @@ module SimpleSession
     end
 
     def update_options
-      @options = {options: OptionHash.new(request.session_options).opts}
+      session[:options] = {options: OptionHash.new(request.session_options).opts}
     end
 
     def options_changed? 
-      request.session_options != @options[:options]
+      request.session_options != session[:options]
     end
 
     def session_changed?
-      request.session != @session
+      request.session != session
     end
 
     def update_session

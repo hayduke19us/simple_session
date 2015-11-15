@@ -2,20 +2,19 @@ require 'sinatra'
 require 'json'
 
 class SimpleApp < Sinatra::Base
-  # disable: show_exceptions
+  disable :show_exceptions
   SECRET = SecureRandom.hex
 
   # The expire argument is added to current server time as seconds
   use SimpleSession::Session, secret: SECRET, max_age: 10
 
-  def authenticated? &block
-    if session[:user_id] == '!Green3ggsandHam!'
-      status 200
-      yield
-    else
-      status 401
-      {msg: "You must sign in"}.to_json
-    end
+  EXCEPT = ['/signin']
+  before do
+    authenticate! unless EXCEPT.include?(request.path)
+  end
+
+  def authenticate!
+    return status 401 unless session[:user_id] == '!Green3ggsandHam!'
   end
 
   def user_id_hash
@@ -23,9 +22,7 @@ class SimpleApp < Sinatra::Base
   end
 
   get '/' do
-    authenticated? do
-      user_id_hash
-    end
+    user_id_hash
   end
 
   get '/signin' do
@@ -34,10 +31,8 @@ class SimpleApp < Sinatra::Base
   end
 
   get '/signout' do
-    authenticated? do
-      session.clear
-      user_id_hash
-    end
+    session.clear
+    {msg: 'session cleared'}.to_json
   end
 
   # List all the options for expire, used as an expired request test
