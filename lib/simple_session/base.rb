@@ -61,7 +61,6 @@ module SimpleSession
       [status, headers, body]
     end
 
-    private
     def extract_session env
       begin
         @request = Rack::Request.new env
