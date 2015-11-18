@@ -3,6 +3,7 @@ require_relative 'error_app'
 
 class ErrorSessionTest < Minitest::Test
   include Rack::Test::Methods
+  include TestHelpers
 
   def app
     @app
@@ -22,12 +23,37 @@ class ErrorSessionTest < Minitest::Test
     end
   end
 
-  def test_if_the_hmac_fails_then_a_new_session_is_created_and_request_continues
-    @app = ErrorApp::ChangeHeader
+  def test_if_hmac_fails_a_new_session_is_created_and_request_continues
+    @app = ErrorApp::AttackCookieFront
+    get '/'
+    assert response.body['msg']
+    assert last_response.ok?
+  end
+
+  def test_when_attacked_from_the_front_security_error
+    @app = ErrorApp::AttackCookieFront
+    assert_security_error
+  end
+
+  # TODO Back is not safe will create signature on both sides
+  def test_when_attacked_from_the_back_security_error
+    skip
+    @app = ErrorApp::AttackCookieBack
+    assert_security_error
+  end
+
+  def test_when_attacked_from_both_sides_security_error
+    @app = ErrorApp::AttackCookieBoth
+    assert_security_error
+  end
+
+  def assert_security_error
+    # We make an initial request to populate the session
     get '/'
 
     assert_output 'SecurityError' do
       get '/'
     end
   end
+
 end

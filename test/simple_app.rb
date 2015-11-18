@@ -8,7 +8,7 @@ class SimpleApp < Sinatra::Base
   # The expire argument is added to current server time as seconds
   use SimpleSession::Session, secret: SECRET, max_age: 10
 
-  EXCEPT = ['/signin']
+  EXCEPT = ['/signin', '/expire']
   before do
     authenticate! unless EXCEPT.include?(request.path)
   end
@@ -36,7 +36,7 @@ class SimpleApp < Sinatra::Base
   end
 
   # List all the options for expire, used as an expired request test
-  get '/expire' do 
+  get '/expire' do
     {session: session.merge(request.session_options).to_json}.to_json
   end
 

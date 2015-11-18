@@ -37,10 +37,6 @@ module SimpleSession
       request.cookies[@key] if request
     end
 
-    def req_options
-      session[:options] if session
-    end
-
     def new_session_hash
       { session_id: SecureRandom.hex(32) }
     end

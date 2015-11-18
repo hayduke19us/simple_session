@@ -107,4 +107,9 @@ class SimpleSessionTest < Minitest::Test
     end
   end
 
+  def test_the_options_are_in_the_session_hash_from_the_first_request_on
+    get '/expire'
+    assert res_session['options']
+  end
+
 end
