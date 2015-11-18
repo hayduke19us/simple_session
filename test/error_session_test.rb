@@ -37,11 +37,11 @@ class ErrorSessionTest < Minitest::Test
 
   # TODO Back is not safe will create signature on both sides
   def test_when_attacked_from_the_back_security_error
-    skip
     @app = ErrorApp::AttackCookieBack
     assert_security_error
   end
 
+  focus
   def test_when_attacked_from_both_sides_security_error
     @app = ErrorApp::AttackCookieBoth
     assert_security_error
@@ -50,7 +50,6 @@ class ErrorSessionTest < Minitest::Test
   def assert_security_error
     # We make an initial request to populate the session
     get '/'
-
     assert_output 'SecurityError' do
       get '/'
     end

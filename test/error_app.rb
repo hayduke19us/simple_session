@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'json'
-require 'rack/response'
+require 'rack/request'
 
 module ErrorApp 
   class Base < Sinatra::Base
@@ -24,69 +24,53 @@ module ErrorApp
     end
 
     def call env
-      set_resp_and_original_cookie env
-      recreate attacked_cookie
+      set_request_and_original_cookie env
 
-      @resp.finish
+      if @original_cookie
+        recreate attacked_cookie
+      end
+
+      @app.call env
     end
 
     private
-    def set_resp_and_original_cookie env
-      status, headers, body = @app.call(env)
-      @resp = Rack::Response.new body, status, headers
-      @original_cookie = @resp.headers['Set-Cookie']
+    def set_request_and_original_cookie env
+      @req = Rack::Request.new env
+      # status, headers, body = @app.call(env)
+      # @resp = Rack::Response.new body, status, headers
+      @original_cookie = @req.cookies['rack.session']
     end
 
+    # Returns appended or perpended cookie
     def attacked_cookie
       self.send @attack
     end
 
     def recreate cookie
-      @resp.headers['Set-Cookie'] = cookie.join(';')
-      quality_check
-    end
-
-    def options
-      x = split_session
-      x.shift
-      x
-    end
-
-    def split_session
-      @original_cookie.split(';')
-    end
-
-    def session_data
-      split_session.first.split('=').last
-    end
-
-    def key
-      'rack.session='
+      @req.cookies['rack.session'] = cookie
+      # @resp.headers['Set-Cookie'] = cookie.join(';')
     end
 
     def front
-      options.unshift(key + 'front_attack' + session_data)
+      base('front_attack') + @original_cookie
     end
 
     def back
-      options.unshift(key + session_data + 'back_attack')
+      @original_cookie + base('back_attack')
     end
 
     def both
-      options.unshift(key + 'front_attack' + session_data + 'back attack')
+      base('front_attack') + @original_cookie + base('back attack')
     end
 
-    def quality_check
-      begin
-        x = @original_cookie.split(';').count
-        y = @resp.headers["Set-Cookie"].split(';').count
-        raise unless x == y
-      end
+    def base data
+      [data].pack('m')
     end
+
   end
 
   class AttackCookieFront < Base
-    use Tamper 
+    use Tamper
     use SimpleSession::Session, secret: SecureRandom.hex
   end
 

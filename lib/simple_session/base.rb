@@ -42,6 +42,7 @@ module SimpleSession
     end
 
     def call env
+      byebug
       # Decrypt request session and store it 
       extract_session env
 
@@ -69,7 +70,7 @@ module SimpleSession
         raise ArgumentError, "Unable to decrypt session" unless session
 
       rescue Exception => e
-        @session = new_session_hash
+        @session = new_session_hash.merge!(options_hash)
         print e.message
       end
 
