@@ -52,19 +52,26 @@ module ErrorApp
     end
 
     def front
-      base('front_attack') + @original_cookie
+      x = unpacked_original.unshift('front_attack')
+      base x.join
     end
 
     def back
-      @original_cookie + base('back_attack')
+      x = unpacked_original.push('back_attack')
+      base x.join
     end
 
     def both
-      base('front_attack') + @original_cookie + base('back attack')
+      x = unpacked_original.push('back_attack')
+      base x.unshift('front_attack').join
+    end
+
+    def unpacked_original
+      @original_cookie.unpack('m0')
     end
 
     def base data
-      [data].pack('m')
+      [data].pack('m0')
     end
 
   end

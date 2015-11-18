@@ -42,7 +42,6 @@ module SimpleSession
     end
 
     def call env
-      byebug
       # Decrypt request session and store it 
       extract_session env
 
@@ -114,6 +113,10 @@ module SimpleSession
       @session = request.session
     end
 
+    def signature
+      hmac(cipher_key)
+    end
+
     def encrypt data
       # Serialize
       m = Marshal.dump data
@@ -122,21 +125,23 @@ module SimpleSession
       c = load_cipher m
 
       # Sign
-      h = hmac(cipher_key) + c
+      h = signature + c + signature
 
       # Encode Base64
-      [h].pack('m')
+      [h].pack('m0')
     end
 
     def decrypt data
       # Decode Base64
-      b = data.unpack('m').first
+      b = data.unpack('m0').first
 
       # Parse Signature
-      h    = b[0, 32]
+      h1   = b[0, 32]
       data = b[32..-1]
+      h2   = data.reverse[0, 32].reverse
+      data = data.reverse[32..-1].reverse
 
-      if h == hmac(cipher_key).to_s
+      if h1 == signature.to_s && h2 == signature.to_s
         # Decipher
         Marshal.load unload_cipher data
       else
