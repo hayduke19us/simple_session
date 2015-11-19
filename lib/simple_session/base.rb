@@ -1,7 +1,6 @@
 require 'rack/request'
 require 'securerandom'
 require 'openssl'
-require 'byebug'
 
 module SimpleSession
 
