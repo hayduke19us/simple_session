@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{A simple middleware providing rack with an
                           encrypted session cookie.}
   spec.description   = %q{Provides an AES-256-CBC encrypted session cookie signed
-                          with and HMAC digest in a double ended manor. 
+                          with an HMAC digest in a double ended manor. 
                           Cookie options include max-age, path, domain, http-only,
                           and secure. Honors Rack's
                           methods like session and request.session_options}
