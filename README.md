@@ -4,8 +4,9 @@
 ![Gem Version](https://badge.fury.io/rb/simple_session.svg)
 
 This is a drop in replacement for rack session. By default
-the session cookie is encrypted in AES-256-CBC and requires a secret
-which is recommended to be kept in an .env file or something similar. 
+the session cookie is encrypted in AES-256-CBC and requires a secret which is
+recommended to be kept in an .env file or something similar. The session is also
+signed with an HMAC signature in a double ended fashion that prevents tampering.
 
 <a href='#install-sect'><h4>Installation</h4></a>
 
